@@ -5,6 +5,7 @@ This is a Google Chrome extension that makes Gmail turn dark mode or light mode 
 i.e. When your browser is on dark mode, your Gmail page turns to dark mode. Otherwise, if your browser is on light mode, the dark mode is disabled and your Gmail page returns to default theme mode.
 
 Setup Instructions:
+
 1 - Download the extension from the gitHub page and unzip the file
 
 2 - Open "Manage extensions" on your browser
