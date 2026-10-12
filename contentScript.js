@@ -68,8 +68,11 @@ function hasLightText(root, sampleSize = 30) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const luminances = [];
   while (luminances.length < sampleSize && walker.nextNode()) {
-    if (!walker.currentNode.textContent.trim()) continue;
-    const value = luminance(getComputedStyle(walker.currentNode.parentElement).color);
+    const { textContent, parentElement } = walker.currentNode;
+    if (!textContent.trim()) continue;
+    // Gmail keeps hidden views in the page; only text on screen counts.
+    if (!parentElement.checkVisibility({ visibilityProperty: true })) continue;
+    const value = luminance(getComputedStyle(parentElement).color);
     if (value !== null) luminances.push(value);
   }
   if (luminances.length === 0) {
