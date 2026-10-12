@@ -36,14 +36,15 @@ Development:
 
 Run `npm install` once. This also downloads a copy of Chrome and Firefox for the tests.
 
-- `npm test` loads the extension into both browsers and checks it on a fake Gmail page (`test/fixtures/gmail.html`), so no Gmail account is needed. Requests to `https://mail.google.com` are intercepted and answered with the fake page, so the content script runs exactly as it would on the real site. Use `BROWSERS=chrome npm test` or `BROWSERS=firefox npm test` to test only one browser.
+- `npm test` loads the extension into both browsers and checks it on fake Gmail pages (`test/fixtures/`), covering plain, picture and dark themes, so no Gmail account is needed. Requests to `https://mail.google.com` are intercepted and answered with a fake page, so the content script runs exactly as it would on the real site. Use `BROWSERS=chrome npm test` or `BROWSERS=firefox npm test` to test only one browser.
 - `npm run lint` checks the extension with Mozilla's add-on linter.
 - `npm run start:firefox` opens Firefox with the extension loaded, for trying it on the real Gmail.
 - `npm run build` creates a zip in `web-ext-artifacts/` for publishing.
 
 
 Disclaimers:
-- This extension works by inverting colors, so if your Gmail page has images on the background, this extension inverts those colors too,
-(don't worry about the images of emails, profile images and label colors, those aren't inverted)
+- This extension works by inverting colors. Images in emails, profile images and label colors are inverted back, so they keep their original colors.
+- With a picture theme, the picture and the sidebar are left alone and only the message list and the open email are darkened.
+- Themes that are already dark (Gmail's own Dark theme, or a picture theme with dark panels) are left untouched.
 
 Please buy me a coffee: https://buymeacoffee.com/bernardolobao
