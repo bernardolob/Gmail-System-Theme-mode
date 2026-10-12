@@ -30,7 +30,20 @@ Setup Instructions (Firefox 140 or newer):
 
 4 - Open Gmail and see if it worked
 
-Firefox removes temporary add-ons when it restarts. To keep it installed, the extension needs to be signed by Mozilla, e.g. with `npx web-ext sign` (unlisted) or by publishing it on addons.mozilla.org.
+Firefox removes temporary add-ons when it restarts. To keep it installed, the extension needs to be signed by Mozilla. Signing it as an unlisted (self-distributed) add-on is free and doesn't publish it on addons.mozilla.org:
+
+1 - Create API credentials at https://addons.mozilla.org/developers/addon/api/key/ and set them in your shell:
+
+```sh
+export WEB_EXT_API_KEY='user:12345:678'
+export WEB_EXT_API_SECRET='...'
+```
+
+2 - Run `npm install` once, then `npm run sign` (this runs `web-ext sign --channel unlisted`). After Mozilla's automated review, usually a few minutes, the signed `.xpi` is saved in `web-ext-artifacts/`
+
+3 - In Firefox, open `about:addons`, click the gear icon, choose "Install Add-on From File…" and select the `.xpi`
+
+To update, increase `version` in `manifest.json` (Mozilla signs each version only once), sign again and install the new `.xpi`.
 
 Development:
 
@@ -40,6 +53,7 @@ Run `npm install` once. This also downloads a copy of Chrome and Firefox for the
 - `npm run lint` checks the extension with Mozilla's add-on linter.
 - `npm run start:firefox` opens Firefox with the extension loaded, for trying it on the real Gmail.
 - `npm run build` creates a zip in `web-ext-artifacts/` for publishing.
+- `npm run sign` gets the extension signed by Mozilla as an unlisted add-on (see the Firefox setup instructions above).
 
 
 Disclaimers:

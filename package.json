@@ -6,7 +6,8 @@
     "test": "node --test",
     "lint": "web-ext lint",
     "start:firefox": "web-ext run --start-url https://mail.google.com",
-    "build": "web-ext build --overwrite-dest"
+    "build": "web-ext build --overwrite-dest",
+    "sign": "web-ext sign --channel unlisted"
   },
   "devDependencies": {
     "puppeteer": "^25.13.0",
