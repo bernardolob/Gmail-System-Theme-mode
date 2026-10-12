@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!-- A tiny stand-in for Gmail. The tests serve this in place of
+     https://mail.google.com so the content script runs without a login. -->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Inbox - Fake Gmail</title>
+    <style>
+      /* Like Gmail, the app fills the whole viewport. */
+      html, body { height: 100%; }
+      body { margin: 0; background: #ffffff; color: #202124; font: 14px sans-serif; }
+      header { height: 64px; background: #f6f8fc; display: flex; align-items: center; gap: 16px; padding: 0 16px; }
+      .gb_P { width: 32px; height: 32px; border-radius: 50%; background: #1a73e8; }
+      main { padding: 16px; }
+      .row { padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+      #photo { display: block; width: 40px; height: 40px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span>Gmail</span>
+      <div class="gb_P" title="Account"></div>
+    </header>
+    <main>
+      <div class="row">Your weekly newsletter</div>
+      <div class="row">Meeting notes</div>
+      <img id="photo" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23e53935'/%3E%3C/svg%3E">
+    </main>
+  </body>
+</html>

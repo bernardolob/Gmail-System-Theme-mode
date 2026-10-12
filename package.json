@@ -1,0 +1,22 @@
+{
+  "name": "gmail-system-theme-mode",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "lint": "web-ext lint",
+    "start:firefox": "web-ext run --start-url https://mail.google.com",
+    "build": "web-ext build --overwrite-dest"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.13.0",
+    "web-ext": "^10.7.0"
+  },
+  "webExt": {
+    "ignoreFiles": [
+      "test",
+      "package.json",
+      "package-lock.json"
+    ]
+  }
+}

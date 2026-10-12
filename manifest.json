@@ -17,5 +17,17 @@
       "16": "images/icon16.png",
       "48": "images/icon48.png",
       "128": "images/icon128.png"
+    },
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "gmail-system-theme-mode@daaain.github.io",
+        "strict_min_version": "140.0",
+        "data_collection_permissions": {
+          "required": ["none"]
+        }
+      },
+      "gecko_android": {
+        "strict_min_version": "142.0"
+      }
     }
   }
