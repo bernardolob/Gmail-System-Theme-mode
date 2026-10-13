@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!-- Fake Gmail showing the contact card that appears when hovering over a
+     sender. Like on the real site, the card is an iframe from another Google
+     site, served with test/fixtures/contact-card.html. Like Gmail's
+     account menu, it sets color-scheme: light on the iframe. -->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Inbox - Fake Gmail</title>
+    <style>
+      html, body { height: 100%; }
+      body { margin: 0; background: #ffffff; color: #202124; font: 14px sans-serif; }
+      main { padding: 16px; }
+      .row { padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+      #contact-card { position: absolute; top: 120px; left: 100px; width: 360px; height: 120px; border: 0; }
+    </style>
+  </head>
+  <body>
+    <main role="main">
+      <div class="row">Daniel Demmel</div>
+      <div class="row">Meeting notes</div>
+    </main>
+    <div>
+      <iframe id="contact-card" name="I__HC_1" style="color-scheme: light" src="https://contacts.google.com/widget/hovercard/v/2?origin=https%3A%2F%2Fmail.google.com"></iframe>
+    </div>
+  </body>
+</html>

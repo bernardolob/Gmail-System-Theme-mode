@@ -54,14 +54,23 @@ async function launch(browserName, extensionDir, scheme) {
   return browser;
 }
 
+// Iframes Gmail embeds from other Google sites, answered with these fixtures.
+const FRAME_FIXTURES = {
+  'https://contacts.google.com/': 'contact-card.html',
+};
+
 async function openFakeGmail(browser, scheme, fixtureName = 'gmail.html') {
   const fixture = readFixture(fixtureName);
   const page = await browser.newPage();
   await page.setViewport({ width: 800, height: 600 });
   await page.setRequestInterception(true);
-  page.on('request', (request) =>
-    request.respond({ status: 200, contentType: 'text/html', body: fixture }),
-  );
+  page.on('request', (request) => {
+    const frameFixture = Object.entries(FRAME_FIXTURES).find(([prefix]) =>
+      request.url().startsWith(prefix),
+    )?.[1];
+    const body = frameFixture ? readFixture(frameFixture) : fixture;
+    request.respond({ status: 200, contentType: 'text/html', body });
+  });
   if (browser.protocol === 'cdp') {
     await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: scheme }]);
   }
@@ -213,6 +222,42 @@ for (const browserName of browsers) {
           return getComputedStyle(newPanel).filter;
         });
         assert.match(inverted, /invert/);
+      });
+    });
+
+    describe('system theme: dark, contact card from another Google site', () => {
+      let browser, page, card;
+      before(async () => {
+        browser = await launch(browserName, extensionDir, 'dark');
+        page = await openFakeGmail(browser, 'dark', 'gmail-contact-card.html');
+        await waitForDarkStyle(page, true);
+        card = await (await page.$('#contact-card')).contentFrame();
+        await card.waitForFunction(() => !!document.getElementById('dark-mode-style'), {
+          timeout: 5000,
+        });
+      });
+      after(() => browser?.close());
+
+      // Points inside the iframe, relative to its top left corner.
+      const pixelInFrame = async (x, y) => {
+        const frame = await page.$eval('#contact-card', (el) => el.getBoundingClientRect().toJSON());
+        return pixelAt(page, frame.x + x, frame.y + y);
+      };
+
+      it('renders the card dark', async () => {
+        const pixel = await pixelInFrame(330, 60);
+        assert.ok(brightness(pixel) < 40, `card background should be dark, got rgb(${pixel})`);
+      });
+
+      it('keeps the page around the card transparent', async () => {
+        const pixel = await pixelInFrame(5, 5);
+        assert.ok(brightness(pixel) < 40, `Gmail should show around the card, got rgb(${pixel})`);
+      });
+
+      it('keeps the photo on the card in its original colours', async () => {
+        const photo = await centreOf(card, '#card-photo');
+        const [r, g, b] = await pixelInFrame(photo.x, photo.y);
+        assert.ok(r > 150 && g < 100 && b < 100, `card photo should stay red, got rgb(${[r, g, b]})`);
       });
     });
 

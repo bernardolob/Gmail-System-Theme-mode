@@ -6,24 +6,37 @@
 //   drawn on top of it) alone, and invert only the content panel holding the
 //   toolbar, the message list and the open email;
 // - dark themes, plain or picture: already dark, so leave them untouched.
+//
+// Gmail's account and apps menus and the contact card shown when hovering
+// over a sender are iframes from other Google sites. Inverting Gmail would
+// invert them too, photos included, so they are inverted back, and this
+// script also runs inside them to darken them the same way.
 
 const STYLE_ID = "dark-mode-style";
 const INVERTED_CLASS = "gmail-dark-mode-inverted";
+const GMAIL_ORIGIN = "https://mail.google.com";
+const GOOGLE_FRAMES =
+  'iframe:is([name="account"], [name="app"], [src*="//ogs.google.com/"], [src*="//contacts.google.com/"])';
+const MESSAGE_TYPE = "gmail-system-theme-mode";
+const isFramed = window !== window.top;
 
+// Only Gmail gets a dark page background. The iframes' pages are
+// transparent around the menu or card, where its shadow is drawn: painting
+// them would show up as a light box once Gmail inverts the iframe back.
 const STYLES = `
   .${INVERTED_CLASS} {
     filter: invert(.94) hue-rotate(180deg);
   }
 
-  html.${INVERTED_CLASS} {
-    background: #121212 !important;
-  }
+  ${isFramed ? "" : `html.${INVERTED_CLASS} { background: #121212 !important; }`}
 
-  /* Invert these back to their original colours: media, the circle around
-     the profile picture, the apps on the right side of the window (Keep,
-     Calendar, ... etc.) and label chips. */
+  /* Invert these back to their original colours: media, the account menu,
+     apps menu and contact card iframes (darkened from inside instead), the
+     circle around the profile picture, the apps on the right side of the
+     window (Keep, Calendar, ... etc.) and label chips. */
   .${INVERTED_CLASS} :is(
     img, video, picture, canvas,
+    ${GOOGLE_FRAMES},
     .gb_P, .gb_T,
     div.aT5-aOt-I-JX-Jw,
     img.HiaYvf-SmKAyb,
@@ -40,6 +53,11 @@ const STYLES = `
 `;
 
 const darkSchemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+// Inside an iframe, prefers-color-scheme follows the iframe's color-scheme,
+// which Gmail sets to light on the account menu whatever the system theme.
+// So Gmail tells its iframes the system theme instead (see listenForFrames).
+let systemIsDark = darkSchemeQuery.matches;
 
 // Gmail keeps previous views in the DOM, hidden, so pick the visible one.
 function visibleMainArea() {
@@ -118,7 +136,7 @@ function contentPanel(mainArea, tolerancePx = 24) {
 
 // Returns the element to invert, or null to leave Gmail as it is.
 function elementToInvert() {
-  if (!darkSchemeQuery.matches) return null;
+  if (!systemIsDark) return null;
   const mainArea = visibleMainArea();
   if (hasLightText(mainArea ?? document.body)) return null;
   if (!hasThemePicture()) return document.documentElement;
@@ -159,14 +177,66 @@ function queueResync() {
   });
 }
 
-sync();
-darkSchemeQuery.addEventListener("change", sync);
+// The menus and contact card also exist outside Gmail, e.g. on other Google
+// sites or when opened on their own, so only darken them inside Gmail.
+// Firefox has no ancestorOrigins, but the frame's referrer is Gmail.
+function isGmailOrFramedByGmail() {
+  if (location.origin === GMAIL_ORIGIN) return true;
+  if (!isFramed) return false;
+  const parentOrigin =
+    location.ancestorOrigins?.[0] ?? (document.referrer && new URL(document.referrer).origin);
+  return parentOrigin === GMAIL_ORIGIN;
+}
 
-// Gmail is a single-page app: views, themes and even our stylesheet and
-// class can change at any time, so re-check whenever the page changes.
-new MutationObserver(queueResync).observe(document.documentElement, {
-  childList: true,
-  subtree: true,
-  attributes: true,
-  attributeFilter: ["class", "style"],
-});
+function themeMessage() {
+  return { type: MESSAGE_TYPE, systemIsDark };
+}
+
+// In Gmail: answer iframes asking for the system theme, and tell them when
+// it changes.
+function listenForFrames() {
+  window.addEventListener("message", (event) => {
+    if (event.data?.type === MESSAGE_TYPE && event.data.ask) {
+      event.source?.postMessage(themeMessage(), event.origin);
+    }
+  });
+  darkSchemeQuery.addEventListener("change", () => {
+    for (const frame of document.querySelectorAll(GOOGLE_FRAMES)) {
+      frame.contentWindow?.postMessage(themeMessage(), "*");
+    }
+  });
+}
+
+// In an iframe: ask Gmail for the system theme and follow what it says.
+function followGmailTheme() {
+  window.addEventListener("message", (event) => {
+    if (event.origin !== GMAIL_ORIGIN || event.data?.type !== MESSAGE_TYPE) return;
+    if (typeof event.data.systemIsDark !== "boolean") return;
+    systemIsDark = event.data.systemIsDark;
+    sync();
+  });
+  window.parent.postMessage({ type: MESSAGE_TYPE, ask: true }, GMAIL_ORIGIN);
+}
+
+if (isGmailOrFramedByGmail()) {
+  if (isFramed) {
+    followGmailTheme();
+  } else {
+    // Before listenForFrames, so iframes are told the new theme.
+    darkSchemeQuery.addEventListener("change", (event) => {
+      systemIsDark = event.matches;
+      sync();
+    });
+    listenForFrames();
+  }
+  sync();
+
+  // Gmail is a single-page app: views, themes and even our stylesheet and
+  // class can change at any time, so re-check whenever the page changes.
+  new MutationObserver(queueResync).observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["class", "style"],
+  });
+}

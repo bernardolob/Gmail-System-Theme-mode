@@ -8,6 +8,12 @@
         "matches": ["https://mail.google.com/*"],
         "js": ["contentScript.js"],
         "run_at": "document_idle"
+    },
+    {
+        "matches": ["https://ogs.google.com/*", "https://contacts.google.com/*"],
+        "js": ["contentScript.js"],
+        "all_frames": true,
+        "run_at": "document_idle"
     }
     ],
     "action": {
