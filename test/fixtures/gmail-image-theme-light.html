@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!-- Fake Gmail with a picture theme and light panels (dark text). -->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Inbox - Fake Gmail</title>
+    <style>
+      html, body { height: 100%; }
+      body { margin: 0; font: 14px sans-serif; }
+      /* Like Gmail, the theme picture sits behind the whole app. */
+      #theme-background {
+        position: fixed; inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect width='10' height='10' fill='%23285aa0'/%3E%3C/svg%3E");
+      }
+      .theme-wrapper { height: 0; }
+      .app { position: relative; display: flex; height: 100%; }
+      nav { width: 240px; padding: 16px; color: #ffffff; }
+      #avatar { display: block; width: 32px; height: 32px; }
+      .panel { flex: 1; margin: 8px; border-radius: 16px; background: rgba(255, 255, 255, 0.9); color: #202124; }
+      .toolbar { height: 48px; padding: 0 16px; display: flex; align-items: center; }
+      .row { padding: 8px 16px; }
+      #photo { display: block; width: 40px; height: 40px; margin: 8px 16px; }
+    </style>
+  </head>
+  <body>
+    <!-- Like Gmail, the picture's wrapper is 0px tall: only the picture
+         itself, positioned over the whole window, has a size. -->
+    <div class="theme-wrapper">
+      <div id="theme-background"></div>
+    </div>
+    <div class="app">
+      <nav>
+        <img id="avatar" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%23e53935'/%3E%3C/svg%3E">
+        <div>Inbox</div>
+        <div>Starred</div>
+      </nav>
+      <div class="panel">
+        <div class="toolbar">Select · Refresh · More</div>
+        <div role="main">
+          <div class="row">Your weekly newsletter</div>
+          <div class="row">Meeting notes</div>
+          <img id="photo" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23e53935'/%3E%3C/svg%3E">
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
