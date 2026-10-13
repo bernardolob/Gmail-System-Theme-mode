@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<!-- A stand-in for the contact card Gmail shows, in an iframe from
+     https://contacts.google.com, when hovering over a sender. Like the real
+     one, the page is transparent around the card, where its shadow goes. -->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Contact card</title>
+    <style>
+      html, body { height: 100%; }
+      body { margin: 0; color: #202124; font: 14px sans-serif; }
+      .card { box-sizing: border-box; margin: 20px; height: calc(100% - 40px); background: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); display: flex; align-items: center; gap: 16px; padding: 0 16px; }
+      #card-photo { display: block; width: 48px; height: 48px; border-radius: 50%; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <img id="card-photo" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%23e53935'/%3E%3C/svg%3E">
+      <div>
+        <div>Daniel Demmel</div>
+        <div>notifications@github.com</div>
+      </div>
+    </div>
+  </body>
+</html>
