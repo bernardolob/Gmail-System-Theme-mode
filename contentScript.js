@@ -14,6 +14,10 @@
 
 const STYLE_ID = "dark-mode-style";
 const INVERTED_CLASS = "gmail-dark-mode-inverted";
+const ORIGINAL_CLASS = "gmail-dark-mode-original";
+const CHECKED_ATTRIBUTE = "data-gmail-dark-mode-checked";
+// The body of each message in an open email.
+const EMAIL_BODY = ".a3s";
 const GMAIL_ORIGIN = "https://mail.google.com";
 const GOOGLE_FRAMES =
   'iframe:is([name="account"], [name="app"], [src*="//ogs.google.com/"], [src*="//contacts.google.com/"])';
@@ -44,6 +48,16 @@ const STYLES = `
     div.at
   ) {
     filter: invert(1) hue-rotate(180deg);
+  }
+
+  /* Parts of emails that are already dark keep their original colours, and
+     so do the images in them, which must not be inverted back again. */
+  .${INVERTED_CLASS} .${ORIGINAL_CLASS} {
+    filter: invert(1) hue-rotate(180deg);
+  }
+
+  .${INVERTED_CLASS} .${ORIGINAL_CLASS} :is(img, video, picture, canvas) {
+    filter: none !important;
   }
 
   .${INVERTED_CLASS} ::selection {
@@ -143,6 +157,33 @@ function elementToInvert() {
   return mainArea ? contentPanel(mainArea) : null;
 }
 
+function hasDarkBackground(element) {
+  const colour = getComputedStyle(element).backgroundColor;
+  const alpha = Number(colour.match(/[\d.]+/g)?.[3] ?? 1);
+  return alpha > 0.5 && (luminance(colour) ?? 1) < 0.35;
+}
+
+// Marks the outermost dark parts of an email, e.g. a newsletter designed
+// with a dark background, so they are not inverted to light.
+function markDarkParts(element) {
+  if (hasDarkBackground(element)) {
+    element.classList.add(ORIGINAL_CLASS);
+    return;
+  }
+  for (const child of element.children) markDarkParts(child);
+}
+
+// Checks each email body once, and again only if its content changes, as
+// this runs whenever Gmail changes the page.
+function keepDarkEmailsOriginal() {
+  for (const body of document.querySelectorAll(EMAIL_BODY)) {
+    const size = String(body.getElementsByTagName("*").length);
+    if (body.getAttribute(CHECKED_ATTRIBUTE) === size) continue;
+    body.setAttribute(CHECKED_ATTRIBUTE, size);
+    markDarkParts(body);
+  }
+}
+
 function addStyles() {
   if (document.getElementById(STYLE_ID)) return;
   const style = document.createElement("style");
@@ -163,6 +204,7 @@ function sync() {
   addStyles();
   // Only touch the class when needed: every write triggers our observer.
   if (!target.classList.contains(INVERTED_CLASS)) target.classList.add(INVERTED_CLASS);
+  keepDarkEmailsOriginal();
 }
 
 // At most once per frame, and before the frame is painted, so a newly

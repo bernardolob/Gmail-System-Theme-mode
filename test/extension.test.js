@@ -225,6 +225,38 @@ for (const browserName of browsers) {
       });
     });
 
+    describe('system theme: dark, email designed with a dark background', () => {
+      let browser, page;
+      before(async () => {
+        browser = await launch(browserName, extensionDir, 'dark');
+        page = await openFakeGmail(browser, 'dark', 'gmail-dark-email.html');
+        await waitForDarkStyle(page, true);
+      });
+      after(() => browser?.close());
+
+      it('keeps the dark part in its original colours', async () => {
+        const { x, y } = await page.$eval('#dark-part', (el) => {
+          const box = el.getBoundingClientRect();
+          return { x: box.right - 10, y: box.top + 10 };
+        });
+        const [r, g, b] = await pixelAt(page, x, y);
+        assert.ok(
+          Math.abs(r - 0x18) < 25 && Math.abs(g - 0x3f) < 25 && Math.abs(b - 0x67) < 25,
+          `dark part should stay navy, got rgb(${[r, g, b]})`,
+        );
+      });
+
+      it('keeps images in the dark part in their original colours', async () => {
+        await assertStaysRed(page, '#dark-photo');
+      });
+
+      it('still darkens the parts with a light background', async () => {
+        const { x, y } = await centreOf(page, '#light-part');
+        const pixel = await pixelAt(page, x + 150, y);
+        assert.ok(brightness(pixel) < 40, `light part should be dark, got rgb(${pixel})`);
+      });
+    });
+
     describe('system theme: dark, contact card from another Google site', () => {
       let browser, page, card;
       before(async () => {
